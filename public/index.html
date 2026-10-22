@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kofix Photography Studio — Promo Bookings</title>
+<meta name="description" content="Where We Bring Every Memory to Life. Book your limited-slot promo photoshoot.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="assets/mark.png">
+<style>
+:root{--gold:#d4af37;--gold2:#f3d97a;--bg:#050505;--card:#111;--line:#2a2412;--txt:#f5f1e6;--mute:#a79f88}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+h1,h2,h3{font-family:Georgia,'Times New Roman',serif;font-weight:600}
+.wrap{max-width:1150px;margin:auto;padding:0 16px}
+header{position:sticky;top:0;z-index:20;background:#000d;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header .wrap{display:flex;align-items:center;gap:12px;height:58px}
+header img{height:34px}header nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+.btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:0;border-radius:999px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:15px;text-decoration:none;display:inline-block;text-align:center}
+.btn.ghost{background:none;color:var(--gold);border:1px solid var(--gold)}
+.btn[disabled]{background:#2b2b2b;color:#888;cursor:not-allowed}
+.hero{position:relative;min-height:78vh;display:grid;align-items:center;overflow:hidden}
+.hero .bg{position:absolute;inset:0;background:linear-gradient(90deg,#000 35%,#0009 70%,#0004),url(assets/p4.jpg) right 20%/cover}
+.hero .wrap{position:relative;padding-top:50px;padding-bottom:50px}
+.hero img.lg{width:min(320px,70%);margin-bottom:18px}
+.hero h1{font-size:clamp(30px,6vw,56px);line-height:1.1;max-width:640px}
+.hero h1 span{color:var(--gold)}
+.hero p{color:var(--mute);max-width:520px;margin:14px 0 22px}
+section{padding:46px 0}
+h2{font-size:clamp(24px,4vw,34px);color:var(--gold);margin-bottom:6px}
+.sub{color:var(--mute);margin-bottom:20px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;scrollbar-width:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:#0c0c0c;color:var(--txt);padding:8px 14px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:linear-gradient(180deg,#151208,#0d0d0d);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.card .cat{color:var(--gold);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.card h3{font-size:19px}.card .inc{color:var(--mute);font-size:14px}
+.price{font-size:28px;font-weight:700;color:var(--gold2)}.price s{font-size:15px;color:var(--mute);margin-left:8px;font-weight:400}
+.bar{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.bar i{height:7px;border-radius:4px;background:#2a2a2a}.bar i.f{background:var(--gold)}
+.slots{font-size:13px;color:var(--mute)}.full{color:#ff8a80;font-weight:700;font-size:13px}
+.card .btn{margin-top:auto}
+.band{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.band img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.steps div{border:1px solid var(--line);border-radius:14px;padding:16px;background:#0c0c0c}.steps b{color:var(--gold);font-size:22px}
+input,textarea,select{width:100%;background:#0b0b0b;color:var(--txt);border:1px solid #3a3320;border-radius:10px;padding:12px;font:inherit;margin:4px 0 10px}
+label{font-size:13px;color:var(--mute)}
+.modal{position:fixed;inset:0;background:#000c;z-index:40;display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}.sheet{background:#0e0e0e;border:1px solid var(--gold);border-radius:20px 20px 0 0;width:min(560px,100%);max-height:94vh;overflow:auto;padding:20px}
+@media(min-width:640px){.modal{align-items:center}.sheet{border-radius:20px}}
+.note{background:#1a1606;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;color:var(--mute);margin-bottom:10px;white-space:pre-line}
+.err{color:#ff8a80;margin:6px 0}.ok{color:#8be78b}
+footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mute);text-align:center;font-size:14px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--gold);color:#000;padding:10px 18px;border-radius:999px;display:none;z-index:99;font-weight:600}
+</style></head><body>
+<header><div class="wrap"><img src="assets/logo-light.png" alt="Kofix Photography Studio">
+<nav><button class="btn ghost" id="music" aria-label="Toggle music">♪ Music</button><a class="btn" href="#packages">Book</a></nav></div></header>
+
+<div class="hero"><div class="bg"></div><div class="wrap">
+<img class="lg" src="assets/logo-light.png" alt="Kofix Photography Studio">
+<h1>Where We Bring <span>Every Memory</span> to Life.</h1>
+<p>Limited promotional slots. Every package opens only <b>six</b> bookings — choose yours before it is full.</p>
+<a class="btn" href="#packages">View promo packages</a> <a class="btn ghost" href="#status">Check my booking</a></div></div>
+
+<section id="packages"><div class="wrap">
+<h2>Promotional Packages</h2><p class="sub">Each package has its own six slots. Slot counts update live.</p>
+<div class="chips" id="chips"></div><div class="grid" id="grid"><p class="sub">Loading packages…</p></div></div></section>
+
+<section><div class="wrap"><h2>Our Work</h2><p class="sub">Moments captured by Kofix Photography Studio.</p>
+<div class="band"><img loading="lazy" src="assets/baby.jpg" alt="Newborn"><img loading="lazy" src="assets/wedding.jpg" alt="Wedding"><img loading="lazy" src="assets/grad.jpg" alt="Graduation"><img loading="lazy" src="assets/boy.jpg" alt="Portrait"><img loading="lazy" src="assets/p3.jpg" alt="Outdoor"></div></div></section>
+
+<section><div class="wrap"><h2>How It Works</h2><div class="steps">
+<div><b>1</b><br>Pick a package and tap Book.</div><div><b>2</b><br>Fill in your details and send the WhatsApp message.</div>
+<div><b>3</b><br>Follow the payment instructions we reply with.</div><div><b>4</b><br>Once we verify payment, your slot number is confirmed.</div></div></div></section>
+
+<section id="status"><div class="wrap" style="max-width:520px"><h2>Check My Booking</h2>
+<label>Booking reference</label><input id="sref" placeholder="KPS-XXXXXX" autocapitalize="characters">
+<label>Phone number used to book</label><input id="sphone" inputmode="tel">
+<button class="btn" id="scheck">Check status</button><div id="sres" style="margin-top:12px"></div></div></section>
+
+<footer><img src="assets/mark.png" height="40" alt=""><p>Kofix Photography Studio — Where We Bring Every Memory to Life.</p>
+<p><a style="color:var(--gold)" href="https://wa.me/233534349054">WhatsApp 0534349054</a></p></footer>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+
+<script>
+const WA='https://wa.me/233534349054';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api=(a,body)=>fetch('/.netlify/functions/api?a='+a,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}).then(r=>r.json().then(j=>({ok:r.ok,...j})));
+const GHS=n=>'GHS '+Number(n).toLocaleString('en-GH');
+let PK=[],ST={},cat='All';
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
+
+async function load(){
+  try{const r=await api('packages');if(!r.packages)throw 0;PK=r.packages;ST=r.settings;draw()}
+  catch{ $('#grid').innerHTML='<p class="err">Could not load packages. Check your connection and refresh.</p>' }
+}
+function draw(){
+  const cats=['All',...new Set(PK.map(p=>p.category))];
+  $('#chips').innerHTML=cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+  const list=PK.filter(p=>cat==='All'||p.category===cat);
+  $('#grid').innerHTML=list.length?list.map(p=>{
+    const left=Math.max(0,6-p.booked),full=left===0,disc=p.regular_price&&p.promo_price&&p.promo_price<p.regular_price;
+    return `<div class="card"><div class="cat">${esc(p.category)}</div><h3>${esc(p.name)}</h3>
+    <div class="inc">${p.shots?p.shots+' shoots':''}${p.includes?' · '+esc(p.includes):''}</div>
+    ${p.description?`<div class="inc">${esc(p.description)}</div>`:''}
+    <div class="price">${p.promo_price!=null?GHS(p.promo_price):p.regular_price!=null?GHS(p.regular_price):''}${disc?`<s>${GHS(p.regular_price)}</s>`:''}</div>
+    <div class="bar">${[0,1,2,3,4,5].map(i=>`<i class="${i<p.booked?'f':''}"></i>`).join('')}</div>
+    ${full?'<div class="full">PROMO FULL — ALL 6 SLOTS BOOKED</div>':`<div class="slots">${p.booked} of 6 promotional slots booked — ${left} slot${left>1?'s':''} remaining</div>`}
+    <button class="btn" data-b="${p.id}" ${full?'disabled':''}>${full?'Sold out':'Book this package'}</button></div>`}).join(''):'<p class="sub">No packages yet.</p>';
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-c]');if(c){cat=c.dataset.c;draw()}
+  const b=e.target.closest('[data-b]');if(b&&!b.disabled)openForm(b.dataset.b);
+  if(e.target.id==='modal')closeM();
+});
+const closeM=()=>$('#modal').classList.remove('on');
+function openForm(id){
+  const p=PK.find(x=>x.id===id);if(!p)return;
+  const today=new Date().toISOString().slice(0,10);
+  $('#sheet').innerHTML=`<h2>${esc(p.name)}</h2>
+  <div class="slots">${p.booked} of 6 promotional slots booked — ${6-p.booked} remaining</div>
+  <div class="price">${p.promo_price!=null?GHS(p.promo_price):''}</div>
+  ${p.terms?`<div class="note"><b>Terms:</b> ${esc(p.terms)}</div>`:''}
+  ${ST.payment_instructions?`<div class="note"><b>Payment:</b> ${esc(ST.payment_instructions)}${ST.deposit_amount?'\nDeposit: '+esc(ST.deposit_amount):''}</div>`:''}
+  <div class="note">Your slot number is assigned only after we verify your payment. Sending the WhatsApp message does not confirm a booking.</div>
+  <label>Full name *</label><input id="f_name" autocomplete="name">
+  <label>WhatsApp / phone number *</label><input id="f_phone" inputmode="tel" autocomplete="tel">
+  <label>Email (optional)</label><input id="f_email" type="email" autocomplete="email">
+  <label>Preferred shoot date</label><input id="f_date" type="date" min="${today}">
+  <label>Preferred location</label><input id="f_loc">
+  <label>Additional notes</label><textarea id="f_notes" rows="2"></textarea>
+  <div class="err" id="f_err"></div>
+  <button class="btn" style="width:100%" id="f_go">Submit &amp; continue on WhatsApp</button>
+  <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeM()">Cancel</button>`;
+  $('#modal').classList.add('on');
+  $('#f_go').onclick=async()=>{
+    const btn=$('#f_go');btn.disabled=true;btn.textContent='Submitting…';
+    const d={package_id:id,name:$('#f_name').value,phone:$('#f_phone').value,email:$('#f_email').value,pref_date:$('#f_date').value,location:$('#f_loc').value,notes:$('#f_notes').value};
+    let r;try{r=await api('book',d)}catch{r={message:'Network problem. Please try again.'}}
+    if(!r.ref){$('#f_err').textContent=r.message||'Could not submit.';btn.disabled=false;btn.textContent='Submit & continue on WhatsApp';if(r.error==='PROMO_FULL')load();return}
+    const msg=`Hello Kofix Photography Studio, I want to book a promotional photography package.
+Customer Name: ${d.name.trim()}
+Phone Number: ${d.phone.trim()}
+Selected Package: ${p.name}
+Booking Reference: ${r.ref}
+Assigned Slot: Pending — assigned once my booking is confirmed
+Preferred Date: ${d.pref_date||'Not specified'}
+Location: ${d.location.trim()||'Not specified'}
+Payment Status: ${r.payment_status.replace('_',' ')} (${r.status})
+Please confirm my booking and provide the payment instructions.`;
+    const url=WA+'?text='+encodeURIComponent(msg);
+    $('#sheet').innerHTML=`<h2>Request received ✓</h2>
+    <div class="note">Reference: <b style="color:var(--gold2);font-size:20px">${esc(r.ref)}</b>\nPackage: ${esc(r.package)}\nStatus: Pending confirmation\nSlot: assigned after payment is verified</div>
+    <p class="sub"><b>Next step:</b> tap below and send the WhatsApp message so we can give you payment instructions. Save your reference to check your status later.</p>
+    <a class="btn" style="width:100%" href="${url}" target="_blank" rel="noopener">Open WhatsApp</a>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeM()">Close</button>`;
+    window.open(url,'_blank');load();
+  };
+}
+$('#scheck').onclick=async()=>{
+  const r=await api('status',{ref:$('#sref').value,phone:$('#sphone').value}).catch(()=>({message:'Network problem.'}));
+  $('#sres').innerHTML=r.ref?`<div class="note"><b>${esc(r.package)}</b>\nStatus: ${esc(r.status)}\nPayment: ${esc(r.payment_status.replace('_',' '))}\n${r.status==='confirmed'?`<span class="ok">You are booking number ${r.slot_no} of 6 for ${esc(r.package)}.</span>`:'Slot number appears once confirmed.'}</div>`:`<div class="err">${esc(r.message||'Not found')}</div>`;
+};
+load();setInterval(()=>{if(!document.hidden&&!$('#modal').classList.contains('on'))load()},25000);
+
+// Ambient background music (generated in-browser; starts only after the visitor taps the button)
+let ac,on=false,timer;
+const chords=[[220,261.6,329.6,392],[174.6,220,261.6,329.6],[261.6,329.6,392,493.9],[196,246.9,293.7,392]];
+function pad(i){const t=ac.currentTime,f=chords[i%4];
+  f.forEach((hz,k)=>{const o=ac.createOscillator(),g=ac.createGain(),l=ac.createBiquadFilter();o.type=k%2?'sine':'triangle';o.frequency.value=hz;l.type='lowpass';l.frequency.value=900;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+1.5);g.gain.linearRampToValueAtTime(0,t+4.6);o.connect(l).connect(g).connect(master);o.start(t);o.stop(t+4.8)});
+  const b=ac.createOscillator(),bg=ac.createGain();b.type='sine';b.frequency.value=f[0]/2;bg.gain.setValueAtTime(0,t);bg.gain.linearRampToValueAtTime(.12,t+.1);bg.gain.exponentialRampToValueAtTime(.001,t+3.5);b.connect(bg).connect(master);b.start(t);b.stop(t+3.6)}
+let master,n=0;
+$('#music').onclick=()=>{
+  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.8;master.connect(ac.destination)}
+  on=!on;$('#music').textContent=on?'♪ Music on':'♪ Music';
+  if(on){ac.resume();pad(n++);timer=setInterval(()=>pad(n++),4000)}else{clearInterval(timer);ac.suspend()}
+};
+</script></body></html>

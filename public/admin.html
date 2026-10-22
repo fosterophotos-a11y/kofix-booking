@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Kofix Admin</title><link rel="icon" href="assets/mark.png">
+<style>
+:root{--gold:#d4af37;--line:#2a2412;--mute:#a79f88}*{box-sizing:border-box;margin:0}
+body{background:#050505;color:#f5f1e6;font:15px/1.45 system-ui,sans-serif;padding:14px;max-width:1100px;margin:auto}
+h2{color:var(--gold);font-family:Georgia,serif;margin:14px 0 8px}
+.btn{background:var(--gold);color:#000;border:0;border-radius:8px;padding:8px 13px;font-weight:700;cursor:pointer;font-size:14px}.btn.g{background:none;color:var(--gold);border:1px solid var(--gold)}.btn.r{background:#7a1f1f;color:#fff}
+input,textarea,select{background:#0b0b0b;color:#f5f1e6;border:1px solid #3a3320;border-radius:8px;padding:9px;font:inherit;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.row>*{flex:1 1 140px}.row .btn{flex:0 0 auto}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0}.tabs .btn{white-space:nowrap}
+.card{background:#101010;border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+.mut{color:var(--mute);font-size:13px}.tag{padding:2px 8px;border-radius:99px;font-size:12px;background:#222}.tag.confirmed{background:#14532d}.tag.pending{background:#78350f}.tag.cancelled,.tag.refunded{background:#7f1d1d}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-top:6px}.slots div{border:1px solid var(--line);border-radius:8px;padding:6px;font-size:12px}.slots .t{border-color:var(--gold)}
+#toast{position:fixed;top:10px;right:10px;background:var(--gold);color:#000;padding:10px 16px;border-radius:10px;display:none;z-index:9;font-weight:700}
+</style></head><body>
+<div id="toast"></div>
+<div id="login"><h2>Kofix Admin</h2><div class="row"><input id="pw" type="password" placeholder="Admin password"><button class="btn" id="go">Log in</button></div><div class="mut" id="lerr"></div></div>
+<div id="app" style="display:none">
+<div class="row"><h2 style="flex:1">Kofix Booking Dashboard</h2><button class="btn g" id="out">Log out</button></div>
+<div class="tabs"><button class="btn" data-t="b">Bookings <span id="bn"></span></button><button class="btn g" data-t="s">Slots</button><button class="btn g" data-t="p">Packages</button><button class="btn g" data-t="c">Settings</button></div>
+<div id="view"></div></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tok=sessionStorage.k||'',D=null,tab='b',lastUnseen=null,flt='all';
+const call=(a,b)=>fetch('/.netlify/functions/api?a='+a,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify(b||{})}).then(async r=>{const j=await r.json();if(r.status===401&&a!=='login')logout();return {ok:r.ok,...j}});
+const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',3500)};
+function logout(){sessionStorage.k='';tok='';$('#app').style.display='none';$('#login').style.display='block'}
+$('#out').onclick=logout;
+$('#go').onclick=async()=>{const r=await call('login',{password:$('#pw').value});if(r.token){tok=sessionStorage.k=r.token;start()}else $('#lerr').textContent=r.message||'Failed'};
+async function start(){$('#login').style.display='none';$('#app').style.display='block';await refresh()}
+async function refresh(){
+  const r=await call('list');if(!r.bookings)return;D=r;
+  if(lastUnseen!==null&&r.unseen>lastUnseen)toast('🔔 New booking request received');
+  lastUnseen=r.unseen;$('#bn').textContent=r.unseen?'('+r.unseen+' new)':'';document.title=(r.unseen?'('+r.unseen+') ':'')+'Kofix Admin';render()}
+setInterval(()=>{if(tok&&!document.hidden)refresh()},20000);
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('[data-t]').forEach(x=>x.className='btn'+(x===b?'':' g'));if(tab==='b')call('seen').then(()=>{lastUnseen=0;$('#bn').textContent=''});render()});
+const act=async(a,b,ok)=>{const r=await call(a,b);toast(r.ok?ok||'Done':r.message||'Error');await refresh()};
+function render(){if(!D)return;({b:vB,s:vS,p:vP,c:vC})[tab]()}
+function vB(){
+  const L=D.bookings.filter(x=>flt==='all'||x.status===flt);
+  $('#view').innerHTML=`<div class="row"><select id="flt">${['all','pending','confirmed','cancelled','refunded'].map(s=>`<option ${s===flt?'selected':''}>${s}</option>`).join('')}</select><button class="btn g" id="csv">Export CSV</button></div>`+
+  (L.map(x=>`<div class="card"><b>${esc(x.name)}</b> <span class="tag ${x.status}">${x.status}</span> <span class="tag">${x.payment_status.replace('_',' ')}</span>
+  <div class="mut">${esc(x.packages?.name)} · Ref ${esc(x.ref)} · ${x.slot_no?'Slot '+x.slot_no+' of 6':'No slot yet'}</div>
+  <div class="mut">📞 ${esc(x.phone)} ${x.email?'· '+esc(x.email):''} · Date: ${esc(x.pref_date||'—')} · ${esc(x.location||'')}</div>${x.notes?`<div class="mut">Note: ${esc(x.notes)}</div>`:''}
+  <div class="row"><select data-pay="${x.id}">${['unpaid','deposit_paid','paid','refunded'].map(s=>`<option value="${s}" ${s===x.payment_status?'selected':''}>${s.replace('_',' ')}</option>`).join('')}</select>
+  <button class="btn" data-ok="${x.id}">Confirm</button><button class="btn r" data-st="cancelled" data-id="${x.id}">Cancel</button><button class="btn g" data-st="refunded" data-id="${x.id}">Refund</button>
+  <a class="btn g" target="_blank" href="https://wa.me/${x.phone.replace(/\D/g,'').replace(/^0/,'233')}?text=${encodeURIComponent('Hello '+x.name+', this is Kofix Photography Studio about your booking '+x.ref+'.')}">WhatsApp</a></div></div>`).join('')||'<p class="mut">No bookings.</p>');
+  $('#flt').onchange=e=>{flt=e.target.value;vB()};
+  $('#csv').onclick=()=>{const h=['ref','package','slot_no','status','payment_status','name','phone','email','pref_date','location','notes','created_at'];
+    const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[h.join(',')].concat(D.bookings.map(x=>h.map(k=>q(k==='package'?x.packages?.name:x[k])).join(',')));
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='kofix-bookings.csv';a.click()};
+  document.querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>act('confirm',{id:b.dataset.ok},'Confirmed'));
+  document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>confirm('Are you sure?')&&act('setstatus',{id:b.dataset.id,status:b.dataset.st}));
+  document.querySelectorAll('[data-pay]').forEach(s=>s.onchange=()=>act('pay',{id:s.dataset.pay,payment_status:s.value},'Payment updated'));
+}
+function vS(){
+  const byP={};D.bookings.filter(x=>x.status==='confirmed').forEach(x=>(byP[x.package_id]||(byP[x.package_id]={}))[x.slot_no]=x);
+  $('#view').innerHTML=D.packages.map(p=>`<div class="card"><b>${esc(p.name)}</b> ${p.active?'':'<span class="tag">inactive</span>'}
+  <div class="mut">${p.booked} of 6 booked — ${6-p.booked} remaining ${p.booked>=6?'· PROMO FULL':''}</div>
+  <div class="slots">${[1,2,3,4,5,6].map(n=>{const x=(byP[p.id]||{})[n];return `<div class="${x?'t':''}"><b>Slot ${n}</b><br>${x?esc(x.name)+'<br>'+esc(x.ref):'<span class="mut">open</span>'}</div>`}).join('')}</div></div>`).join('')||'<p class="mut">No packages.</p>';
+}
+const F=['category','name','shots','includes','regular_price','promo_price','description','terms','photo','sort'];
+function vP(){
+  $('#view').innerHTML=`<div class="card"><b>Add / edit package</b><input type="hidden" id="p_id">
+  ${F.map(k=>`<div class="mut" style="margin-top:6px">${k.replace('_',' ')}</div><input id="p_${k}">`).join('')}
+  <label style="display:block;margin:8px 0"><input type="checkbox" id="p_active" checked style="width:auto"> Active (visible to customers)</label>
+  <div class="row"><button class="btn" id="psave">Save package</button><button class="btn g" id="pclear">Clear</button><button class="btn g" id="pimp">Import flyer packages</button></div>
+  <div class="mut">Every package automatically gets its own six slots.</div></div>`+
+  D.packages.map(p=>`<div class="card"><b>${esc(p.name)}</b> <span class="mut">${esc(p.category)} · ${p.promo_price??'—'} (reg ${p.regular_price??'—'}) · ${p.active?'active':'inactive'}</span>
+  <div class="row"><button class="btn g" data-e="${p.id}">Edit</button><button class="btn r" data-d="${p.id}">Delete</button></div></div>`).join('');
+  const fill=p=>{$('#p_id').value=p?.id||'';F.forEach(k=>$('#p_'+k).value=p?.[k]??'');$('#p_active').checked=p?p.active:true;scrollTo(0,0)};
+  $('#pclear').onclick=()=>fill();
+  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>fill(D.packages.find(x=>x.id===b.dataset.e)));
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>confirm('Delete? (Packages with bookings are only deactivated.)')&&act('delpkg',{id:b.dataset.d}));
+  $('#psave').onclick=()=>{const o={id:$('#p_id').value||undefined,active:$('#p_active').checked};F.forEach(k=>o[k]=$('#p_'+k).value);act('savepkg',o,'Saved')};
+  $('#pimp').onclick=async()=>{const r=await call('importflyer');toast(r.ok?`Added ${r.added}, skipped ${r.skipped} existing`:r.message);refresh()};
+}
+function vC(){
+  const s=D.settings;
+  $('#view').innerHTML=`<div class="card"><b>Booking confirmation rule</b>
+  <select id="s_rule"><option value="manual" ${s.confirm_rule==='manual'?'selected':''}>Manual — I can confirm any time</option><option value="deposit" ${s.confirm_rule==='deposit'?'selected':''}>Deposit or full payment required</option><option value="full" ${s.confirm_rule==='full'?'selected':''}>Full payment required</option></select>
+  <div class="mut" style="margin-top:8px">Deposit amount (shown to customers)</div><input id="s_dep" value="${esc(s.deposit_amount)}">
+  <div class="mut" style="margin-top:8px">Payment instructions (shown on booking form)</div><textarea id="s_pay" rows="4">${esc(s.payment_instructions)}</textarea>
+  <div class="row"><button class="btn" id="ssave">Save settings</button></div></div>`;
+  $('#ssave').onclick=()=>act('savesettings',{confirm_rule:$('#s_rule').value,deposit_amount:$('#s_dep').value,payment_instructions:$('#s_pay').value},'Saved');
+}
+if(tok)start();
+</script></body></html>
