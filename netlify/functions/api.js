@@ -1,7 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+let _sb;  // created lazily so missing env vars give a clear JSON error instead of a crash
+const sb = new Proxy({}, { get: (_, k) => (_sb ||= createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } }))[k] });
 const SECRET = process.env.ADMIN_TOKEN_SECRET || '';
 
 // Packages exactly as printed on the sample flyer: [category, [[shots, includes, regular, promo], ...]]
@@ -62,6 +63,13 @@ async function counts() {
 }
 
 const routes = {
+  async health() {   // shows which settings exist (never their values) and whether the database answers
+    const env = Object.fromEntries(['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','ADMIN_PASSWORD','ADMIN_TOKEN_SECRET'].map((k) => [k, !!process.env[k]]));
+    let db = 'ok', packages = null;
+    try { const r = await sb.from('packages').select('id', { count: 'exact', head: true }); if (r.error) db = r.error.message; else packages = r.count; }
+    catch (e) { db = String(e.message || e); }
+    return { env, db, packages };
+  },
   async packages() {
     const pk = must(await sb.from('packages').select('*').eq('active', true).order('sort').order('created_at'));
     const st = must(await sb.from('settings').select('confirm_rule,deposit_amount,payment_instructions').eq('id', 1).single());

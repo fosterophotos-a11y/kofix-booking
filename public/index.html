@@ -93,8 +93,12 @@ let PK=[],ST={},cat='All';
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
 
 async function load(){
-  try{const r=await api('packages');if(!r.packages)throw 0;PK=r.packages;ST=r.settings;draw()}
-  catch{ $('#grid').innerHTML='<p class="err">Could not load packages. Check your connection and refresh.</p>' }
+  try{
+    const res=await fetch('/.netlify/functions/api?a=packages');
+    let r;try{r=await res.json()}catch{throw new Error('Booking service not found on the server (status '+res.status+')')}
+    if(!r.packages)throw new Error(r.message||'Server error');
+    PK=r.packages;ST=r.settings;draw()
+  }catch(e){ $('#grid').innerHTML='<p class="err">Could not load packages: '+esc(e.message)+'<br><small>Site owner: open /.netlify/functions/api?a=health to see the cause.</small></p>' }
 }
 function draw(){
   const cats=['All',...new Set(PK.map(p=>p.category))];
