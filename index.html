@@ -47,8 +47,14 @@ label{font-size:13px;color:var(--mute)}
 .err{color:#ff8a80;margin:6px 0}.ok{color:#8be78b}
 footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mute);text-align:center;font-size:14px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--gold);color:#000;padding:10px 18px;border-radius:999px;display:none;z-index:99;font-weight:600}
+header{background:#fff!important;border-bottom:3px solid var(--gold)}header img{height:42px!important}
+.hero,section,footer{position:relative;z-index:1}#bub{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.mwrap{position:relative}#mpanel{display:none;position:absolute;right:0;top:46px;background:#0e0e0e;border:1px solid var(--gold);border-radius:14px;padding:8px;min-width:200px;z-index:30}
+#mpanel.on{display:block}#mpanel button{display:block;width:100%;text-align:left;background:none;border:0;color:#f5f1e6;padding:10px;border-radius:8px;cursor:pointer;font-size:15px}
+#mpanel button.sel{background:var(--gold);color:#000;font-weight:700}
 </style></head><body>
-<header><div class="wrap"><img src="assets/logo-light.png" alt="Kofix Photography Studio"><nav><button class="btn ghost" id="music">♪ Music</button><a class="btn" href="#packages">Book</a></nav></div></header>
+<canvas id="bub"></canvas>
+<header><div class="wrap"><img src="assets/logo-black.png" alt="Kofix Photography Studio"><nav><div class="mwrap"><button class="btn ghost" id="music">♪ Music</button><div id="mpanel"></div></div><a class="btn" href="#packages">Book</a></nav></div></header>
 <div class="hero"><div class="bg"></div><div class="wrap"><img class="lg" src="assets/logo-light.png" alt="Kofix Photography Studio">
 <h1>Where We Bring <span>Every Memory</span> to Life.</h1><p>Limited promotional slots. Every package opens only <b>six</b> bookings — choose yours before it is full.</p>
 <a class="btn" href="#packages">View promo packages</a></div></div>
@@ -68,14 +74,14 @@ const T='Any additional outfit beyond the package limit costs GHS 20 per outfit.
 const D=[
 ["Studio Shoot",[[5,"1 outfit",250,200],[8,"2 outfits",400,320],[10,"3 outfits",550,440],[13,"4 outfits",750,600]]],
 ["Outdoor Shoot",[[5,"1 outfit",500,400],[10,"2 outfits",700,560],[12,"3 outfits",900,720],[15,"4 outfits",1200,960]]],
-["Studio Babies Shoot",[[4,"1 outfit",230,270],[8,"2 outfits",350,280],[10,"3 outfits",550,440],[13,"1 frame 12x16",750,600]]],
-["Babies Shoot Outdoor",[[4,"1 outfit",350,280],[8,"2 outfits",570,600],[11,"3 outfits",800,740],[15,"1 frame 12x16",1200,960]]],
+["Studio Babies Shoot",[[4,"1 outfit",320,270],[8,"2 outfits",350,280],[10,"3 outfits",550,440],[13,"1 frame 12x16",750,600]]],
+["Babies Shoot Outdoor",[[4,"1 outfit",350,280],[8,"2 outfits",500,350],[11,"3 outfits",800,740],[15,"1 frame 12x16",1200,960]]],
 ["Pre-Wedding Shoot Studio",[[4,"1 outfit",400,330],[6,"2 outfits",550,380],[10,"3 outfits",700,550],[13,"1 frame 12x16",850,750]]],
 ["Pre-Wedding Shoot Outdoor",[[6,"1 outfit",550,440],[8,"2 outfits",700,560],[10,"3 outfits",830,665],[12,"1 frame 12x16",950,850]]],
 ["Family Shot Studio",[[5,"1 outfit",600,480],[9,"2 outfits",850,680],[14,"3 outfits",1200,960],[16,"4 outfits",1600,1280]]],
 ["Family Shot Outdoor",[[6,"1 outfit",850,680],[11,"2 outfits",1200,960],[14,"3 outfits",1500,1200],[25,"4 outfits",2000,1600]]],
 ["Maternity Shoot Studio",[[3,"1 outfit",200,160],[6,"2 outfits",400,320],[8,"3 outfits",650,520],[10,"1 frame 12x16",899,720]]],
-["Maternity Shoot Outdoor",[[4,"1 outfit",350,280],[8,"2 outfits",570,600],[11,"3 outfits",800,740],[13,"1 frame 12x16",1100,880]]],
+["Maternity Shoot Outdoor",[[4,"1 outfit",350,280],[8,"2 outfits",650,450],[11,"3 outfits",800,740],[13,"1 frame 12x16",1100,880]]],
 ["Graduation Shot Studio",[[4,"",300,240],[6,"",400,320],[8,"",750,580],[10,"",850,740]]],
 ["Graduation Shot Outdoor",[[6,"",400,320],[11,"",560,450],[13,"",860,690],[15,"",1000,800]]]];
 const PK=[];D.forEach(([c,t])=>t.forEach(([s,i,r,p])=>{const n=c+" — "+s+" Shoots";PK.push({c,n,s,i,r,p,b:Math.min(6,BOOKED[n]||0)})}));
@@ -116,17 +122,45 @@ Please confirm my booking and provide the payment instructions.`;
     window.open(WA+'?text='+encodeURIComponent(m),'_blank')||(location.href=WA+'?text='+encodeURIComponent(m));
     $('#sheet').innerHTML=`<h2>Almost done</h2><div class="note">Reference: <b style="color:var(--gold2)">${ref}</b>\nPackage: ${esc(p.n)}\nStatus: Pending — not confirmed yet</div><p class="sub">Send the WhatsApp message to finish. Your slot is confirmed after we verify payment.</p><button class="btn" style="width:100%" onclick="$('#modal').classList.remove('on')">Close</button>`}}
 draw();
-// Ambient background music (generated in-browser; starts only after the visitor taps the button)
-let ac,on=false,timer;
-const chords=[[220,261.6,329.6,392],[174.6,220,261.6,329.6],[261.6,329.6,392,493.9],[196,246.9,293.7,392]];
-function pad(i){const t=ac.currentTime,f=chords[i%4];
-  f.forEach((hz,k)=>{const o=ac.createOscillator(),g=ac.createGain(),l=ac.createBiquadFilter();o.type=k%2?'sine':'triangle';o.frequency.value=hz;l.type='lowpass';l.frequency.value=900;
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+1.5);g.gain.linearRampToValueAtTime(0,t+4.6);o.connect(l).connect(g).connect(master);o.start(t);o.stop(t+4.8)});
-  const b=ac.createOscillator(),bg=ac.createGain();b.type='sine';b.frequency.value=f[0]/2;bg.gain.setValueAtTime(0,t);bg.gain.linearRampToValueAtTime(.12,t+.1);bg.gain.exponentialRampToValueAtTime(.001,t+3.5);b.connect(bg).connect(master);b.start(t);b.stop(t+3.6)}
-let master,n=0;
-$('#music').onclick=()=>{
-  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.8;master.connect(ac.destination)}
-  on=!on;$('#music').textContent=on?'♪ Music on':'♪ Music';
-  if(on){ac.resume();pad(n++);timer=setInterval(()=>pad(n++),4000)}else{clearInterval(timer);ac.suspend()}
-};
+// ===== Background music: 5 cool instrumental styles (generated in the browser, no files needed) =====
+const N=(m)=>440*Math.pow(2,(m-69)/12);
+const TR=[
+ {n:'Chill Lo-Fi',bpm:76,w:'sine',ch:[[57,60,64,67],[53,57,60,64],[48,52,55,59],[55,59,62,66]],k:'x.......x..x....',h:'..x...x...x...x.',s:'....x.......x...',b:'x.....x.x.......',m:.5},
+ {n:'Afro Groove',bpm:102,w:'triangle',ch:[[62,65,69,72],[55,59,62,65],[60,64,67,71],[57,60,64,67]],k:'x..x..x...x..x..',h:'..x.x.x...x.x.x.',s:'....x.......x..x',b:'x..x..x.x..x..x.',m:.6},
+ {n:'Smooth Jazz',bpm:88,w:'triangle',ch:[[62,66,69,73],[59,62,66,69],[64,67,71,74],[57,61,64,67]],k:'x.....x...x.....',h:'x.x.x.x.x.x.x.x.',s:'....x.......x...',b:'x...x...x...x...',m:.7},
+ {n:'Deep House',bpm:118,w:'sawtooth',ch:[[57,60,64],[53,57,60],[55,59,62],[52,55,59]],k:'x...x...x...x...',h:'..x...x...x...x.',s:'........x.......',b:'..x...x...x...x.',m:.2},
+ {n:'Sunset Chill',bpm:64,w:'sine',ch:[[60,64,67,71],[57,60,64,67],[53,57,60,64],[55,59,62,65]],k:'................',h:'................',s:'................',b:'x...............',m:.45}];
+let ac,master,cur=-1,tmr,step=0,nextT=0;
+const sel=localStorage.kofixTrack,off=sel==='off';
+function ensure(){if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.55;master.connect(ac.destination)}if(ac.state!=='running')ac.resume()}
+function tone(f,t,d,type,v,lp){const o=ac.createOscillator(),g=ac.createGain(),l=ac.createBiquadFilter();o.type=type;o.frequency.value=f;l.type='lowpass';l.frequency.value=lp||1200;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.03);g.gain.exponentialRampToValueAtTime(.0008,t+d);o.connect(l).connect(g).connect(master);o.start(t);o.stop(t+d+.05)}
+function noise(t,d,v,hp){const b=ac.createBuffer(1,ac.sampleRate*d,ac.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;
+  const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=b;f.type='highpass';f.frequency.value=hp;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f).connect(g).connect(master);s.start(t)}
+function play(t,T,st){const bar=Math.floor(st/16)%4,p=st%16,c=T.ch[bar],pent=[0,2,4,7,9];
+  if(p===0)c.forEach(m=>tone(N(m),t,60/T.bpm*4,T.w,.035,700));
+  if(T.k[p]==='x'){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.15);g.gain.setValueAtTime(.55,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g).connect(master);o.start(t);o.stop(t+.22)}
+  if(T.h[p]==='x')noise(t,.05,.06,7000); if(T.s[p]==='x')noise(t,.12,.1,1800);
+  if(T.b[p]==='x')tone(N(c[0]-12),t,.35,'sine',.22,400);
+  if(Math.random()<T.m*.22&&p%2===0)tone(N(c[0]+12+pent[Math.floor(Math.random()*5)]),t,.6,'sine',.05,2400)}
+function loop(){const T=TR[cur],dur=60/T.bpm/4;while(nextT<ac.currentTime+.15){play(nextT,T,step);nextT+=dur;step++}}
+function start(i){ensure();clearInterval(tmr);cur=i;step=0;nextT=ac.currentTime+.05;tmr=setInterval(loop,30);localStorage.kofixTrack=i;panel()}
+function stop(){clearInterval(tmr);cur=-1;localStorage.kofixTrack='off';panel()}
+function panel(){$('#mpanel').innerHTML=TR.map((t,i)=>`<button class="${i===cur?'sel':''}" data-m="${i}">${i===cur?'▶ ':''}${t.n}</button>`).join('')+`<button class="${cur<0?'sel':''}" data-m="off">Music off</button>`;
+  $('#music').textContent=cur>=0?'♪ '+TR[cur].n:'♪ Music'}
+$('#music').onclick=e=>{e.stopPropagation();$('#mpanel').classList.toggle('on')};
+$('#mpanel').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;b.dataset.m==='off'?stop():start(+b.dataset.m);$('#mpanel').classList.remove('on')};
+document.addEventListener('click',e=>{if(!e.target.closest('.mwrap'))$('#mpanel').classList.remove('on')});
+panel();
+// Browsers only allow sound after a first touch/click/scroll, so the music starts automatically on the visitor's first interaction.
+if(!off){const first=()=>{if(cur<0&&localStorage.kofixTrack!=='off')start(sel&&TR[sel]?+sel:0);['pointerdown','keydown','touchstart','wheel','scroll'].forEach(v=>removeEventListener(v,first))};
+  ['pointerdown','keydown','touchstart','wheel','scroll'].forEach(v=>addEventListener(v,first,{passive:true}));try{ensure();if(ac.state==='running')first()}catch(e){}}
+// ===== Floating bubbles (rise from bottom to top, soft and behind the packages) =====
+(function(){const c=$('#bub'),x=c.getContext('2d');if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let W,H,B=[];const rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight};rs();addEventListener('resize',rs);
+  const mk=(init)=>({x:Math.random()*W,y:init?Math.random()*H:H+30,r:4+Math.random()*14,v:.25+Math.random()*.6,ph:Math.random()*6,a:.07+Math.random()*.13,g:Math.random()<.6});
+  for(let i=0;i<(innerWidth<600?14:26);i++)B.push(mk(true));
+  (function f(){x.clearRect(0,0,W,H);B.forEach((b,i)=>{b.y-=b.v;b.ph+=.015;const px=b.x+Math.sin(b.ph)*14;if(b.y<-30)B[i]=mk(false);
+    x.beginPath();x.arc(px,b.y,b.r,0,7);x.strokeStyle=b.g?`rgba(212,175,55,${b.a+.1})`:`rgba(255,255,255,${b.a})`;x.lineWidth=1.2;x.stroke();
+    x.fillStyle=b.g?`rgba(212,175,55,${b.a*.35})`:`rgba(255,255,255,${b.a*.3})`;x.fill()});requestAnimationFrame(f)})()})();
 </script></body></html>
